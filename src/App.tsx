@@ -1,10 +1,13 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import {useEffect, useState} from 'react'
 import './App.css'
-import ImageConverter from "./ImageConverter.tsx";
+import ImageConverter, {PDFtoIMG} from "./ImageConverter.tsx";
+import '@mantine/core/styles.css';
+import '@mantine/dropzone/styles.css';
 
-async function downloadImage(){
+import {MantineProvider, DEFAULT_THEME, Text} from '@mantine/core';
+import {Dropzone, FileWithPath, MIME_TYPES} from "@mantine/dropzone";
+
+async function downloadImage() {
     const link = document.createElement("a");
     link.download = "image.png";
     link.href = URL.createObjectURL(new Blob([await ImageConverter()]));
@@ -13,32 +16,32 @@ async function downloadImage(){
 }
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [files, setFiles] = useState<File[]>([]);
+    const [imageURL, setImageURL] = useState<string|undefined>(undefined);
+    const imageVisualiser = async (receivedFiles: FileWithPath[]) => {
+        //setImageURL(URL.createObjectURL(receivedFiles[0])??undefined)
+        const fileObject = URL.createObjectURL(receivedFiles[0]);
+        if (receivedFiles[0].type == MIME_TYPES.pdf) {
+            const files = await PDFtoIMG(fileObject);
+            setImageURL(files[0] ?? undefined);
+        }
+        else setImageURL(fileObject);
+    }
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-        <div className="card">
-            <button onClick={() => setCount((count) => count + 1)}>
-                count is {count}
-            </button>
-            <button onClick={downloadImage}>IMG</button>
-            <p>
-                Edit <code>src/App.tsx</code> and save to test HMR
-            </p>
-        </div>
-        <p className="read-the-docs">
-            Click on the Vite and React logos to learn more
-      </p>
-    </>
+    return (
+        <MantineProvider theme={DEFAULT_THEME} defaultColorScheme={"dark"}>
+            <Dropzone onDrop={(receivedFiles) => imageVisualiser(receivedFiles)}>
+                <div>
+                    <Text size={"xl"} inline>
+                        Drag images here or click to select files
+                    </Text>
+                    <Text size={"sm"} c={"dimmed"} inline mt={8}>
+                        Attach as many files as you like, each file should not exceed 5mb
+                    </Text>
+                </div>
+            </Dropzone>
+            <img src={imageURL} alt={"test"}/>
+    </MantineProvider>
   )
 }
 
