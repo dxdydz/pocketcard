@@ -36,4 +36,31 @@ async function ImageConverter(/*imageList: Buffer[]*/){
     background.composite(img2, 100, 150);
     return await background.getBuffer("image/png");
 }
+
+export async function CanvasLayout(imageList: string[]) {
+    const background = new Jimp({ width: 3508, height: 2480, color:0xffffffff })
+    const partWidth=background.width/4;
+    const partHeight=background.height/2;
+    for (let i=0;i<8;i++){
+        if (imageList[i] == undefined) continue;
+        const imgFetch = await fetch(imageList[i]);
+        const imgBuffer = await imgFetch.arrayBuffer();
+        const img = await Jimp.read(imgBuffer);
+        let x, y;
+        img.resize({ w: partWidth, h: partHeight });
+        if (i>0 && i<5) {
+            y=0;
+            x=partWidth*(i-1);
+        }
+        else {
+            img.rotate(180);
+            y=partHeight;
+            if (i==0)
+                x=0;
+            else x=partWidth*(8-i); //5=3, 6=2, 7=1
+        }
+        background.composite(img, x, y); //TODO: add x and y testing if they're not undefined
+    }
+    return background.getBuffer("image/png");
+}
 export default ImageConverter;

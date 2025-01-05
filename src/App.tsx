@@ -1,10 +1,10 @@
 import {useEffect, useState} from 'react'
 import './App.css'
-import ImageConverter, {PDFtoIMG} from "./ImageConverter.tsx";
+import ImageConverter, {CanvasLayout, PDFtoIMG} from "./ImageConverter.tsx";
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
 
-import {MantineProvider, DEFAULT_THEME, Text} from '@mantine/core';
+import {MantineProvider, DEFAULT_THEME, Text, Button} from '@mantine/core';
 import {Dropzone, FileWithPath, MIME_TYPES} from "@mantine/dropzone";
 
 async function downloadImage() {
@@ -16,7 +16,7 @@ async function downloadImage() {
 }
 
 function App() {
-    const [files, setFiles] = useState<File[]>([]);
+    const [files, setFiles] = useState<FileWithPath[]>([]);
     const [imageURL, setImageURL] = useState<string|undefined>(undefined);
     const imageVisualiser = async (receivedFiles: FileWithPath[]) => {
         //setImageURL(URL.createObjectURL(receivedFiles[0])??undefined)
@@ -27,10 +27,26 @@ function App() {
         }
         else setImageURL(fileObject);
     }
+    const createPocketfile = async () => {
+        //TODO: Write check for whether they uploaded a PDF or image files
+        const filesURL=[];
+        for (const file of files){
+            if (file.type == MIME_TYPES.pdf) {
+                const convertedFiles = await PDFtoIMG(URL.createObjectURL(file));
+                for (const convFile of convertedFiles){
+                    filesURL.push(convFile);
+                }
+            }
+            else filesURL.push(URL.createObjectURL(file))
+        }
+        const pocketfile = await CanvasLayout(filesURL);
+        const pocketfileBlob = new Blob([pocketfile], { type: "image/png" });
+        setImageURL(URL.createObjectURL(pocketfileBlob));
+    }
 
     return (
         <MantineProvider theme={DEFAULT_THEME} defaultColorScheme={"dark"}>
-            <Dropzone onDrop={(receivedFiles) => imageVisualiser(receivedFiles)}>
+            <Dropzone onDrop={setFiles} accept={[MIME_TYPES.png,MIME_TYPES.jpeg,MIME_TYPES.pdf]}>
                 <div>
                     <Text size={"xl"} inline>
                         Drag images here or click to select files
@@ -40,7 +56,8 @@ function App() {
                     </Text>
                 </div>
             </Dropzone>
-            <img src={imageURL} alt={"test"}/>
+            <Button onClick={createPocketfile}>Submit</Button>
+            <img src={imageURL} alt={"test"} width={500}/>
     </MantineProvider>
   )
 }
