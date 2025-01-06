@@ -1,6 +1,4 @@
 import {Jimp} from 'jimp'
-import test1 from './assets/test-button.jpg';
-import test2 from './assets/test-2.jpeg';
 import {createCanvas} from 'canvas';
 import {getDocument, GlobalWorkerOptions} from "pdfjs-dist";
 
@@ -25,17 +23,17 @@ export async function PDFtoIMG(PDFfile: string){
     return dataList;
 }
 
-async function ImageConverter(/*imageList: Buffer[]*/){
-    /*for (const image of imageList){
+/*async function ImageConverter(imageList: Buffer[]){
+    for (const image of imageList){
         sharp(image)
-    }*/
+    }
     const img1 = await Jimp.read(await fetch(test1).then(res => res.arrayBuffer()));
     const img2 = await Jimp.read(await fetch(test2).then(res => res.arrayBuffer()));
     const background = new Jimp({ width: 1200, height: 1200, color:0xffffffff});
     background.composite(img1, 0, 0);
     background.composite(img2, 100, 150);
     return await background.getBuffer("image/png");
-}
+}*/
 
 export async function CanvasLayout(imageList: string[]) {
     const background = new Jimp({ width: 3508, height: 2480, color:0xffffffff })
@@ -63,4 +61,3 @@ export async function CanvasLayout(imageList: string[]) {
     }
     return background.getBuffer("image/png");
 }
-export default ImageConverter;

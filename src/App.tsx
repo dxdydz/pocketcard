@@ -1,6 +1,6 @@
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import './App.css'
-import ImageConverter, {CanvasLayout, PDFtoIMG} from "./ImageConverter.tsx";
+import {CanvasLayout, PDFtoIMG} from "./ImageConverter.tsx";
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
 
@@ -8,13 +8,13 @@ import {MantineProvider, DEFAULT_THEME, Text, Button} from '@mantine/core';
 import {Dropzone, FileWithPath, MIME_TYPES} from "@mantine/dropzone";
 import FilePreview from "./FilePreview.tsx";
 
-async function downloadImage() {
+/*async function downloadImage() {
     const link = document.createElement("a");
     link.download = "image.png";
     link.href = URL.createObjectURL(new Blob([await ImageConverter()]));
     link.click();
     link.remove();
-}
+}*/
 
 function App() {
     const [files, setFiles] = useState<FileWithPath[]>([]);
