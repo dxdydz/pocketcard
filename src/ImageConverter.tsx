@@ -11,7 +11,7 @@ export async function PDFtoIMG(PDFfile: string){
     const pdfDocument = await pdfDocumentLoadingTask.promise;
     for (let i = 0; i < pdfDocument.numPages; i++) {
         const page = await pdfDocument.getPage(i + 1);
-        const pageViewport = page.getViewport({scale: 1});
+        const pageViewport = page.getViewport({scale: 4}); //page quality
         const canvas = createCanvas(pageViewport.width, pageViewport.height);
         console.log(pageViewport.height, pageViewport.height)
         const ctx = canvas.getContext("2d");
@@ -59,5 +59,6 @@ export async function CanvasLayout(imageList: string[]) {
         }
         background.composite(img, x, y); //TODO: add x and y testing if they're not undefined
     }
+    background.rotate(90);
     return background.getBuffer("image/png");
 }
