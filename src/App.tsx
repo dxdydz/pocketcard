@@ -1,6 +1,6 @@
 import {useState} from 'react'
 import './App.css'
-import {CanvasLayout, PDFtoIMG} from "./ImageConverter.tsx";
+import {CreateFoldable, PDFtoIMG} from "./ImageConverter.tsx";
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
 
@@ -20,10 +20,11 @@ import FilePreview from "./FilePreview.tsx";
 import HeroBackground from "./assets/HeroBackground.jpg";
 import PocketmodLayout from "./assets/PocketmodLayout.png"
 import PocketfoldLayout from "./assets/PocketfoldLayout.png"
+import {LayoutType, PaperType} from './Layouts.tsx';
 
-async function downloadImage(imageURL: string) {
+function downloadImage(imageURL: string) {
     const link = document.createElement("a");
-    link.download = "image.png";
+    link.download = "pocketverter.png";
     link.href = imageURL;
     link.click();
     link.remove();
@@ -35,12 +36,13 @@ function App() {
     const [imageIsLoading, setImageIsLoading] = useState<boolean>(false);
     const [fileSubmitted, setFileSubmitted] = useState<boolean>(false);
     const [layoutSubmission, setLayoutSubmission] = useState<string|null>(null);
+    const [paperSizeSubmission, setPaperSizeSubmission] = useState<string|null>(null);
     const addFiles = (newFiles: FileWithPath[])=>{
         setFiles(files.concat(newFiles));
     };
-    const createPocketfile = async (layout: string|null) => {
+    const createPocketfile = async (layout: string | null, paperSize: string | null) => {
         //TODO: Write check for whether they uploaded a PDF or image files
-        if (layout==null) return;
+        if (layout==null||paperSize==null) return;
         setImageIsLoading(true);
         const filesURL=[];
         for (const file of files) {
@@ -52,7 +54,7 @@ function App() {
             }
             else filesURL.push(URL.createObjectURL(file))
         }
-        const pocketfile = await CanvasLayout(filesURL, layout);
+        const pocketfile = await CreateFoldable(filesURL, layout, paperSize);
         if (pocketfile==undefined) return;
         const pocketfileBlob = new Blob([pocketfile], { type: "image/png" });
         setImageURL(URL.createObjectURL(pocketfileBlob));
@@ -93,13 +95,13 @@ function App() {
                                     </div>
                                 </Dropzone>
                                 <FilePreview filesState={files} setFilesState={fileChangeHandler} />
-                                <Button onClick={()=>{createPocketfile(layoutSubmission); setFileSubmitted(true)}} mt={"md"}>Submit</Button>
+                                <Button onClick={()=>{void createPocketfile(layoutSubmission, paperSizeSubmission); setFileSubmitted(true)}} mt={"md"}>Submit</Button>
                             </div>
                             {fileSubmitted &&
                                 <>
                                     <Divider my={"md"}/>
                                     <Box pos={"relative"}>
-                                        <LoadingOverlay visible={imageIsLoading}/> {/*TODO: Figure out how to make this take space when img is off*/}
+                                        <LoadingOverlay visible={imageIsLoading}/>
                                         {imageURL ? <img src={imageURL} alt={"Exported Image"} width={500} /> : <Box c={"gray"} w={500} h={500}></Box>}
                                     </Box>
                                     {imageURL && <Button onClick={()=>downloadImage(imageURL)} mt={"md"}>Download</Button>}
@@ -109,8 +111,15 @@ function App() {
                             <Select
                                 label={"Layout"}
                                 description={"Select layout of the output file. The preview of the layout will be visible below."}
-                                data={["Pocketmod","Pocketfold"]}
+                                data={Object.values(LayoutType)}
                                 onChange={setLayoutSubmission}
+                                style={{textAlign: "left"}}
+                            />
+                            <Select
+                                label={"Paper Size"}
+                                description={"Select the size of paper used for the output."}
+                                data={Object.values(PaperType)}
+                                onChange={setPaperSizeSubmission}
                                 style={{textAlign: "left"}}
                             />
                             {layoutSubmission && <Image w={"50%"} src={LayoutPreview(layoutSubmission)} mx={"auto"} />}
@@ -124,9 +133,9 @@ function App() {
 }
 
 function LayoutPreview(layout: string){
-    if (layout==="Pocketmod")
+    if (layout===LayoutType.Pocketmod)
         return PocketmodLayout;
-    else if (layout==="Pocketfold")
+    else if (layout===LayoutType.Pocketfold)
         return PocketfoldLayout;
     else return undefined;
 }

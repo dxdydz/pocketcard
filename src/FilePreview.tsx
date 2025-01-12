@@ -28,7 +28,7 @@ function FilePreviewElement({image, removeElement}:{image: FileWithPath, removeE
         return URL.createObjectURL(file);
     }
     useEffect(() => {
-        fetchImage(image).then(r => setImageSrc(r));
+        void fetchImage(image).then(r => setImageSrc(r));
     }, [image]);
     return (
         <Box style={{display: "grid", grid:
