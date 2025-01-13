@@ -35,30 +35,29 @@ function App() {
     const [imageURL, setImageURL] = useState<string|undefined>(undefined);
     const [imageIsLoading, setImageIsLoading] = useState<boolean>(false);
     const [fileSubmitted, setFileSubmitted] = useState<boolean>(false);
-    const [layoutSubmission, setLayoutSubmission] = useState<string|null>(null);
-    const [paperSizeSubmission, setPaperSizeSubmission] = useState<string|null>(null);
+    const [layoutSubmission, setLayoutSubmission] = useState<LayoutType|null>(null);
+    const [paperSizeSubmission, setPaperSizeSubmission] = useState<PaperType|null>(null);
     const addFiles = (newFiles: FileWithPath[])=>{
         setFiles(files.concat(newFiles));
     };
-    const createPocketfile = async (layout: string | null, paperSize: string | null) => {
+    const createPocketfile = async (layout: LayoutType | null, paperSize: PaperType | null) => {
         //TODO: Write check for whether they uploaded a PDF or image files
-        if (layout==null||paperSize==null) return;
-        setImageIsLoading(true);
-        const filesURL=[];
-        for (const file of files) {
-            if (file.type == MIME_TYPES.pdf) {
-                const convertedFiles = await PDFtoIMG(URL.createObjectURL(file));
-                for (const convFile of convertedFiles){
-                    filesURL.push(convFile);
-                }
+        if (!layout||!paperSize) return;
+
+        const filesURL=await Promise.all(files.map(async file => {
+            if (file.type === MIME_TYPES.pdf) {
+                return PDFtoIMG(URL.createObjectURL(file));
+            } else {
+                return URL.createObjectURL(file);
             }
-            else filesURL.push(URL.createObjectURL(file))
-        }
+        })).then(res => res.flat());
         const pocketfile = await CreateFoldable(filesURL, layout, paperSize);
+
         if (pocketfile==undefined) return;
+
         const pocketfileBlob = new Blob([pocketfile], { type: "image/png" });
         setImageURL(URL.createObjectURL(pocketfileBlob));
-        setImageIsLoading(false);
+
     };
     const fileChangeHandler = (setNewFiles: FileWithPath[]) => {
         setFiles(setNewFiles);
@@ -95,7 +94,11 @@ function App() {
                                     </div>
                                 </Dropzone>
                                 <FilePreview filesState={files} setFilesState={fileChangeHandler} />
-                                <Button onClick={()=>{void createPocketfile(layoutSubmission, paperSizeSubmission); setFileSubmitted(true)}} mt={"md"}>Submit</Button>
+                                <Button onClick={()=>{
+                                    setImageIsLoading(true);
+                                    void createPocketfile(layoutSubmission, paperSizeSubmission).finally(()=>setImageIsLoading(false));
+                                    setFileSubmitted(true);
+                                }} mt={"md"}>Submit</Button>
                             </div>
                             {fileSubmitted &&
                                 <>
@@ -112,14 +115,14 @@ function App() {
                                 label={"Layout"}
                                 description={"Select layout of the output file. The preview of the layout will be visible below."}
                                 data={Object.values(LayoutType)}
-                                onChange={setLayoutSubmission}
+                                onChange={(res)=>setLayoutSubmission(res as unknown as LayoutType)}
                                 style={{textAlign: "left"}}
                             />
                             <Select
                                 label={"Paper Size"}
                                 description={"Select the size of paper used for the output."}
                                 data={Object.values(PaperType)}
-                                onChange={setPaperSizeSubmission}
+                                onChange={(res)=>setPaperSizeSubmission(res as unknown as PaperType)}
                                 style={{textAlign: "left"}}
                             />
                             {layoutSubmission && <Image w={"50%"} src={LayoutPreview(layoutSubmission)} mx={"auto"} />}
@@ -132,7 +135,7 @@ function App() {
     );
 }
 
-function LayoutPreview(layout: string){
+function LayoutPreview(layout: LayoutType){
     if (layout===LayoutType.Pocketmod)
         return PocketmodLayout;
     else if (layout===LayoutType.Pocketfold)

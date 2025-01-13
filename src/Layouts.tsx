@@ -9,7 +9,7 @@ export interface LayoutPage {
 }
 
 export interface Layout {
-    method: string;
+    method: LayoutType;
     data: LayoutPage[];
 }
 
