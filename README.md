@@ -13,6 +13,6 @@ This website allows you to convert your image files and documents into foldable 
 
 
 ### Credits:
-For Pocketmod layout - https://pocketmod.com\
+For Pocketmod layout - https://pocketmod.com  
 For Pocketfold layout - https://3skulls.itch.io/pocketfold  
 
