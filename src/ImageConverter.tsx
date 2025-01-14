@@ -1,7 +1,7 @@
 import {Jimp} from 'jimp'
 import {createCanvas} from 'canvas';
 import {getDocument, GlobalWorkerOptions} from "pdfjs-dist";
-import {Layout, LayoutPage, Layouts, PaperOptions, PaperOption} from "./Layouts.tsx";
+import {Layout, LayoutPage, Layouts, PaperOptions, PaperOption, PaperType, LayoutType} from "./Layouts.tsx";
 
 GlobalWorkerOptions.workerSrc=new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
@@ -38,7 +38,7 @@ export async function PDFtoIMG(PDFfile: string){
 
 type JimpInstance = Awaited<ReturnType<typeof Jimp.read>>; //Jimp bug workaround
 
-export async function CreateFoldable(imageList: string[], layout: string, paperSize: string) {
+export async function CreateFoldable(imageList: string[], layout: LayoutType, paperSize: PaperType) {
     const paperSizeSelection = PaperOptions.find((value: PaperOption) => value.type === paperSize);
     if (paperSizeSelection==undefined) throw Error("Invalid paperSize");
     const background = new Jimp({ width: paperSizeSelection.data.width, height: paperSizeSelection.data.height, color:0xffffffff })
