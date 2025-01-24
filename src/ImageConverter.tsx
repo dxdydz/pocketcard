@@ -34,7 +34,8 @@ export async function CreateFoldable(imageList: string[], layout: LayoutType, pa
 
     const pageData=Layouts.find((value: Layout)=>(value.method===layout));
     if (pageData===undefined) return; //TODO: Replace with proper error handling
-    for (let i=0;i<pageData.data.length;i++){
+    const pageNumber = imageList.length > pageData.data.length ? pageData.data.length : imageList.length;
+    for (let i=0;i<pageNumber;i++){
         const imgFetch = await fetch(imageList[i]);
         const imgBuffer = await imgFetch.arrayBuffer();
         const img: JimpInstance = await Jimp.read(imgBuffer);
