@@ -8,34 +8,19 @@ GlobalWorkerOptions.workerSrc=new URL('pdfjs-dist/build/pdf.worker.min.mjs', imp
 export async function PDFtoIMG(PDFfile: string){
     const dataList = [];
     const pdfDocumentLoadingTask = getDocument(PDFfile);
-    //const canvas = createCanvas();
     const pdfDocument = await pdfDocumentLoadingTask.promise;
     for (let i = 0; i < pdfDocument.numPages; i++) {
         const page = await pdfDocument.getPage(i + 1);
         const pageViewport = page.getViewport({scale: 4}); //page quality
         const canvas = createCanvas(pageViewport.width, pageViewport.height);
-        //console.log(pageViewport.height, pageViewport.height)
         const ctx = canvas.getContext("2d");
         // @ts-expect-error node canvas doesn't support some properties
         const pageRenderTask = page.render({canvasContext: ctx, viewport: pageViewport});
         await pageRenderTask.promise;
-        //console.log(canvas.toDataURL('image/png'));
         dataList.push(canvas.toDataURL('image/png'));
     }
     return dataList;
 }
-
-/*async function ImageConverter(imageList: Buffer[]){
-    for (const image of imageList){
-        sharp(image)
-    }
-    const img1 = await Jimp.read(await fetch(test1).then(res => res.arrayBuffer()));
-    const img2 = await Jimp.read(await fetch(test2).then(res => res.arrayBuffer()));
-    const background = new Jimp({ width: 1200, height: 1200, color:0xffffffff});
-    background.composite(img1, 0, 0);
-    background.composite(img2, 100, 150);
-    return await background.getBuffer("image/png");
-}*/
 
 type JimpInstance = Awaited<ReturnType<typeof Jimp.read>>; //Jimp bug workaround
 
@@ -65,7 +50,8 @@ export async function CreateFoldable(imageList: string[], layout: LayoutType, pa
         const img: JimpInstance = sortedLayout[i];
         const [x, y] = RowLayout(partWidth, partHeight, 4, i)
         img.resize({ w: partWidth, h: partHeight });
-        background.composite(img, x, y); //TODO: add x and y testing if they're not undefined
+        if (x===undefined||y===undefined) throw new Error("Invalid Layout.");
+        background.composite(img, x, y);
     }
     background.rotate(90);
     return background.getBuffer("image/png");

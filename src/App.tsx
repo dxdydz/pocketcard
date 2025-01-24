@@ -41,7 +41,6 @@ function App() {
         setFiles(files.concat(newFiles));
     };
     const createPocketfile = async (layout: LayoutType | null, paperSize: PaperType | null) => {
-        //TODO: Write check for whether they uploaded a PDF or image files
         if (!layout||!paperSize) return;
 
         const filesURL=await Promise.all(files.map(async file => {
