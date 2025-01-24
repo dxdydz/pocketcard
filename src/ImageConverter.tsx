@@ -16,6 +16,7 @@ export async function PDFtoIMG(PDFfile: string){
         const canvas = createCanvas(pageViewport.width, pageViewport.height);
         //console.log(pageViewport.height, pageViewport.height)
         const ctx = canvas.getContext("2d");
+        // @ts-expect-error node canvas doesn't support some properties
         const pageRenderTask = page.render({canvasContext: ctx, viewport: pageViewport});
         await pageRenderTask.promise;
         //console.log(canvas.toDataURL('image/png'));
