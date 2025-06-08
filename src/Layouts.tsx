@@ -41,6 +41,7 @@ export const Layouts: Layout[] = [
 export enum PaperType {
     A4="A4",
     Letter="Letter",
+    Card="Card",
 }
 
 export interface PaperOption {
@@ -63,6 +64,13 @@ export const PaperOptions: PaperOption[] = [
         data: {
            width: 3300,
            height: 2550
+        }
+    },
+    {
+        type: PaperType.Card,
+        data: {
+            width: 3000,
+            height: 2100
         }
     }
 ]
